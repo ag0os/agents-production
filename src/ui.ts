@@ -1,6 +1,13 @@
 import ora from 'ora'
 import type { AIMessage } from '../types'
+import type OpenAI from 'openai'
 import { generateImageToolDefinition } from './tools/generateImage'
+
+type FunctionToolCall = OpenAI.Chat.Completions.ChatCompletionMessageFunctionToolCall
+
+const isFunctionToolCall = (
+  tool: OpenAI.Chat.Completions.ChatCompletionMessageToolCall
+): tool is FunctionToolCall => tool.type === 'function'
 
 export const showLoader = (text: string) => {
   const spinner = ora({
@@ -43,6 +50,7 @@ export const logMessage = (message: AIMessage) => {
     // If has tool_calls, log function name and ask for approval if calendar
     if ('tool_calls' in message && message.tool_calls) {
       message.tool_calls.forEach((tool) => {
+        if (!isFunctionToolCall(tool)) return
         console.log(`\n${color}[ASSISTANT]${reset}`)
         console.log(`${tool.function.name}\n`)
 

@@ -1,21 +1,34 @@
 import type { AIMessage } from '../types'
+import type OpenAI from 'openai'
 import { addMessages, getMessages, saveToolResponse } from './memory'
 import { runApprovalCheck, runLLM } from './llm'
 import { showLoader, logMessage } from './ui'
 import { runTool } from './toolRunner'
 import { generateImageToolDefinition } from './tools/generateImage'
 
+type FunctionToolCall = OpenAI.Chat.Completions.ChatCompletionMessageFunctionToolCall
+
+const isFunctionToolCall = (
+  tool: OpenAI.Chat.Completions.ChatCompletionMessageToolCall
+): tool is FunctionToolCall => tool.type === 'function'
+
 const handleImageApprovalFlow = async (
   history: AIMessage[],
   userMessage: string
 ) => {
   const lastMessage = history[history.length - 1]
-  const toolCall = lastMessage?.tool_calls?.[0]
+  if (!lastMessage || !('tool_calls' in lastMessage) || !lastMessage.tool_calls) {
+    return false
+  }
 
-  if (
-    !toolCall ||
-    toolCall.function.name !== generateImageToolDefinition.name
-  ) {
+  const rawToolCall = lastMessage.tool_calls[0]
+  if (!rawToolCall || !isFunctionToolCall(rawToolCall)) {
+    return false
+  }
+
+  const toolCall = rawToolCall
+
+  if (toolCall.function.name !== generateImageToolDefinition.name) {
     return false
   }
 
@@ -69,7 +82,10 @@ export const runAgent = async ({
     }
 
     if (response.tool_calls) {
-      const toolCall = response.tool_calls[0]
+      const rawToolCall = response.tool_calls[0]
+      if (!isFunctionToolCall(rawToolCall)) continue
+
+      const toolCall = rawToolCall
       logMessage(response)
       loader.update(`executing: ${toolCall.function.name}`)
 
@@ -104,7 +120,10 @@ export const runAgentEval = async ({
     }
 
     if (response.tool_calls) {
-      const toolCall = response.tool_calls[0]
+      const rawToolCall = response.tool_calls[0]
+      if (!isFunctionToolCall(rawToolCall)) continue
+
+      const toolCall = rawToolCall
 
       if (toolCall.function.name === generateImageToolDefinition.name) {
         return messages

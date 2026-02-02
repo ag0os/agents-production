@@ -20,7 +20,7 @@ export const runLLM = async ({
   const summary = await getSummary()
 
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4.1-mini',
     temperature,
     messages: [
       {
@@ -42,8 +42,8 @@ export const runLLM = async ({
 }
 
 export const runApprovalCheck = async (userMessage: string) => {
-  const response = await openai.beta.chat.completions.parse({
-    model: 'gpt-4o-mini',
+  const response = await openai.chat.completions.parse({
+    model: 'gpt-4.1-mini',
     temperature: 0.1,
     response_format: zodResponseFormat(
       z.object({

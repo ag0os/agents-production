@@ -6,8 +6,8 @@ export const movieSearchToolDefinition = {
   name: 'movieSearch',
   parameters: z.object({
     query: z.string().describe('The search query for finding movies'),
-    genre: z.string().optional().describe('Filter movies by genre'),
-    director: z.string().optional().describe('Filter movies by director'),
+    genre: z.string().nullable().optional().describe('Filter movies by genre'),
+    director: z.string().nullable().optional().describe('Filter movies by director'),
   }),
   description:
     'Searches for movies and information about them, including title, year, genre, director, actors, rating, and description. Use this to answer questions about movies.',

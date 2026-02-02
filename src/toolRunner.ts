@@ -7,8 +7,10 @@ import { reddit, redditToolDefinition } from './tools/reddit'
 import { dadJoke, dadJokeToolDefinition } from './tools/dadJoke'
 import { movieSearch, movieSearchToolDefinition } from './tools/movieSearch'
 
+type FunctionToolCall = OpenAI.Chat.Completions.ChatCompletionMessageFunctionToolCall
+
 export const runTool = async (
-  toolCall: OpenAI.Chat.Completions.ChatCompletionMessageToolCall,
+  toolCall: FunctionToolCall,
   userMessage: string
 ) => {
   const input = {
